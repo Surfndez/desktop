@@ -1516,6 +1516,8 @@ export class App extends React.Component<IAppProps, IAppState> {
             onDismissed={this.onPopupDismissed}
           />
         )
+      case PopupType.RebaseConflicts:
+        return null
       default:
         return assertNever(popup, `Unknown popup type: ${popup}`)
     }
