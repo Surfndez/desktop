@@ -5,6 +5,7 @@ import {
   WorkingDirectoryStatus,
   isConflictWithMarkers,
   GitStatusEntry,
+  isConflictedFileStatus,
 } from '../models/status'
 import { assertNever } from './fatal-error'
 import { ManualConflictResolution } from '../models/manual-conflict-resolution'
@@ -124,4 +125,23 @@ export function getLabelForManualResolutionOption(
     default:
       return assertNever(entry, 'Unknown status entry to format')
   }
+}
+
+/** Filter working directory changes for conflicted or resolved files  */
+export function getUnmergedFiles(status: WorkingDirectoryStatus) {
+  return status.files.filter(f => isConflictedFile(f.status))
+}
+
+/** Filter working directory changes for resolved files  */
+export function getResolvedFiles(status: WorkingDirectoryStatus) {
+  return status.files.filter(
+    f => isConflictedFileStatus(f.status) && !hasUnresolvedConflicts(f.status)
+  )
+}
+
+/** Filter working directory changes for conflicted files  */
+export function getConflictedFiles(status: WorkingDirectoryStatus) {
+  return status.files.filter(
+    f => isConflictedFileStatus(f.status) && hasUnresolvedConflicts(f.status)
+  )
 }

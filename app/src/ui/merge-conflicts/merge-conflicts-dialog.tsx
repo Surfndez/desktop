@@ -9,12 +9,24 @@ import { Repository } from '../../models/repository'
 import {
   WorkingDirectoryStatus,
   WorkingDirectoryFileChange,
+<<<<<<< HEAD
   isConflictedFileStatus,
+=======
+  AppFileStatusKind,
+  ConflictedFileStatus,
+  isConflictWithMarkers,
+>>>>>>> define a component for use to display a list of conflicted files
 } from '../../models/status'
 import { Octicon, OcticonSymbol } from '../octicons'
 import { DialogHeader } from '../dialog/header'
 import { LinkButton } from '../lib/link-button'
-import { isConflictedFile, hasUnresolvedConflicts } from '../../lib/status'
+import {
+  hasUnresolvedConflicts,
+  getResolvedFiles,
+  getConflictedFiles,
+  getUnmergedFiles,
+  isConflictedFile,
+} from '../../lib/status'
 import { DefaultCommitMessage } from '../../models/commit-message'
 import { renderUnmergedFile } from './unmerged-file'
 import {
