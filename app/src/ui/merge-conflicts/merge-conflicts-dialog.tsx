@@ -9,19 +9,11 @@ import { Repository } from '../../models/repository'
 import {
   WorkingDirectoryStatus,
   WorkingDirectoryFileChange,
-<<<<<<< HEAD
-  isConflictedFileStatus,
-=======
-  AppFileStatusKind,
-  ConflictedFileStatus,
-  isConflictWithMarkers,
->>>>>>> define a component for use to display a list of conflicted files
 } from '../../models/status'
 import { Octicon, OcticonSymbol } from '../octicons'
 import { DialogHeader } from '../dialog/header'
 import { LinkButton } from '../lib/link-button'
 import {
-  hasUnresolvedConflicts,
   getResolvedFiles,
   getConflictedFiles,
   getUnmergedFiles,
@@ -29,10 +21,7 @@ import {
 } from '../../lib/status'
 import { DefaultCommitMessage } from '../../models/commit-message'
 import { renderUnmergedFile } from './unmerged-file'
-import {
-  ManualConflictResolution,
-  ManualConflictResolutionKind,
-} from '../../models/manual-conflict-resolution'
+import { ManualConflictResolution } from '../../models/manual-conflict-resolution'
 
 interface IMergeConflictsDialogProps {
   readonly dispatcher: Dispatcher
@@ -46,35 +35,6 @@ interface IMergeConflictsDialogProps {
   /* `undefined` when we didn't know the branch at the beginning of this flow */
   readonly theirBranch?: string
   readonly manualResolutions: Map<string, ManualConflictResolution>
-}
-
-/** Filter working directory changes for conflicted or resolved files  */
-function getUnmergedFiles(status: WorkingDirectoryStatus) {
-  return status.files.filter(f => isConflictedFile(f.status))
-}
-
-/** Filter working directory changes for resolved files  */
-function getResolvedFiles(
-  status: WorkingDirectoryStatus,
-  manualResolutions: Map<string, ManualConflictResolutionKind>
-) {
-  return status.files.filter(
-    f =>
-      isConflictedFileStatus(f.status) &&
-      !hasUnresolvedConflicts(f.status, manualResolutions.get(f.path))
-  )
-}
-
-/** Filter working directory changes for conflicted files  */
-function getConflictedFiles(
-  status: WorkingDirectoryStatus,
-  manualResolutions: Map<string, ManualConflictResolutionKind>
-) {
-  return status.files.filter(
-    f =>
-      isConflictedFileStatus(f.status) &&
-      hasUnresolvedConflicts(f.status, manualResolutions.get(f.path))
-  )
 }
 
 const submitButtonString = 'Commit merge'
@@ -120,10 +80,7 @@ export class MergeConflictsDialog extends React.Component<
    */
   private onCancel = async () => {
     const anyResolvedFiles =
-      getResolvedFiles(
-        this.props.workingDirectory,
-        this.props.manualResolutions
-      ).length > 0
+      getResolvedFiles(this.props.workingDirectory).length > 0
     if (!anyResolvedFiles) {
       await this.props.dispatcher.abortMerge(this.props.repository)
       this.props.onDismissed()
@@ -151,10 +108,7 @@ export class MergeConflictsDialog extends React.Component<
     })
     this.props.dispatcher.recordMergeConflictsDialogDismissal()
     const anyConflictedFiles =
-      getConflictedFiles(
-        this.props.workingDirectory,
-        this.props.manualResolutions
-      ).length > 0
+      getConflictedFiles(this.props.workingDirectory).length > 0
     if (anyConflictedFiles) {
       this.props.dispatcher.recordAnyConflictsLeftOnMergeConflictsDialogDismissal()
     }
@@ -256,10 +210,8 @@ export class MergeConflictsDialog extends React.Component<
 
   public render() {
     const unmergedFiles = getUnmergedFiles(this.props.workingDirectory)
-    const conflictedFilesCount = getConflictedFiles(
-      this.props.workingDirectory,
-      this.props.manualResolutions
-    ).length
+    const conflictedFilesCount = getConflictedFiles(this.props.workingDirectory)
+      .length
 
     const headerTitle = this.renderHeaderTitle(
       this.props.ourBranch,
