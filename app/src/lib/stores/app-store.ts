@@ -3282,7 +3282,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       return f.status.kind !== AppFileStatusKind.Untracked
     })
 
-    await gitStore.performFailableOperation(() =>
+    return await gitStore.performFailableOperation(() =>
       continueRebase(repository, trackedFiles)
     )
   }
