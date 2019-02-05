@@ -1669,7 +1669,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     const repoState = this.repositoryStateCache.get(repository)
     const { conflictState } = repoState.changesState
-    if (conflictState === null) {
+    if (conflictState === null || conflictState.kind !== 'merge') {
       return
     }
 
