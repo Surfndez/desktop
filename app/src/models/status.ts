@@ -1,4 +1,6 @@
 import { DiffSelection, DiffSelectionType } from './diff'
+import { isConflictedFile, hasUnresolvedConflicts } from '../lib/status'
+import { ManualConflictResolutionKind } from './manual-conflict-resolution'
 
 /**
  * The status entry code as reported by Git.
@@ -354,4 +356,33 @@ function getIncludeAllState(
   }
 
   return includeAll
+}
+
+/** Filter working directory changes for conflicted or resolved files  */
+export function getUnmergedFiles(status: WorkingDirectoryStatus) {
+  return status.files.filter(f => isConflictedFile(f.status))
+}
+
+/** Filter working directory changes for resolved files  */
+export function getResolvedFiles(
+  status: WorkingDirectoryStatus,
+  manualResolutions: Map<string, ManualConflictResolutionKind>
+) {
+  return status.files.filter(
+    f =>
+      isConflictedFileStatus(f.status) &&
+      !hasUnresolvedConflicts(f.status, manualResolutions.get(f.path))
+  )
+}
+
+/** Filter working directory changes for conflicted files  */
+export function getConflictedFiles(
+  status: WorkingDirectoryStatus,
+  manualResolutions: Map<string, ManualConflictResolutionKind>
+) {
+  return status.files.filter(
+    f =>
+      isConflictedFileStatus(f.status) &&
+      hasUnresolvedConflicts(f.status, manualResolutions.get(f.path))
+  )
 }
