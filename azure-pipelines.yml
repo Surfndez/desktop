@@ -21,6 +21,10 @@ jobs:
       - script: |
           yarn test:setup && yarn test
         name: Test
+      - script: |
+          yarn test:review
+        displayName: 'Review Test Failures'
+        condition: failed()
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
         inputs:
@@ -56,6 +60,10 @@ jobs:
           Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
           yarn test:setup && yarn test
         name: Test
+      - script: |
+          yarn test:review
+        displayName: 'Review Test Failures'
+        condition: failed()
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
         inputs:
@@ -83,6 +91,10 @@ jobs:
       - script: |
           yarn test:setup && yarn test
         name: Test
+      - script: |
+          yarn test:review
+        displayName: 'Review Test Failures'
+        condition: failed()
       - task: PublishTestResults@2
         displayName: 'Publish Test Results'
         inputs:
