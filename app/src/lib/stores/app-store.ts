@@ -190,7 +190,7 @@ import {
   ManualConflictResolutionKind,
 } from '../../models/manual-conflict-resolution'
 import { BranchPruner } from './helpers/branch-pruner'
-import { enableBranchPruning } from '../feature-flag'
+import { enableBranchPruning, enableNewRebaseFlow } from '../feature-flag'
 
 /**
  * As fast-forwarding local branches is proportional to the number of local
@@ -1614,13 +1614,45 @@ export class AppStore extends TypedBaseStore<IAppState> {
       conflictState: updateConflictState(state, status, this.statsStore),
     }))
 
-    this._triggerMergeConflictsFlow(repository)
+    this._triggerConflictsFlow(repository)
 
     this.emitUpdate()
 
     this.updateChangesDiffForCurrentSelection(repository)
 
     return true
+  }
+
+  private async _triggerConflictsFlow(repository: Repository) {
+    if (enableNewRebaseFlow()) {
+      this._triggerRebaseFlow(repository)
+      this._triggerMergeConflictsFlow(repository)
+    } else {
+      this._triggerMergeConflictsFlow(repository)
+    }
+  }
+
+  /** display the rebase flow, if necessary */
+  private async _triggerRebaseFlow(repository: Repository) {
+    // are we already displaying the dialog?
+    const alreadyInFlow =
+      this.currentPopup !== null &&
+      this.currentPopup.type === PopupType.RebaseConflicts
+
+    if (alreadyInFlow) {
+      return
+    }
+
+    const repoState = this.repositoryStateCache.get(repository)
+    const { conflictState } = repoState.changesState
+    if (conflictState === null || conflictState.kind === 'merge') {
+      return
+    }
+
+    this._showPopup({
+      type: PopupType.RebaseConflicts,
+      repository,
+    })
   }
 
   /** starts the conflict resolution flow, if appropriate */
@@ -1640,7 +1672,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     const repoState = this.repositoryStateCache.get(repository)
     const { conflictState } = repoState.changesState
-    if (conflictState === null) {
+    if (conflictState === null || conflictState.kind !== 'merge') {
       return
     }
 
